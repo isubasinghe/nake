@@ -63,12 +63,20 @@ sprsh1 "B2" = Just $ Task $ \fetch -> (*2) <$> fetch "B1"
 sprsh1 _ = Nothing
 
 store = initialise () (\key -> if key == "A1" then 10 else 20)
-result = busy sprsh1 "B2" store
+result' = busy sprsh1 "B2" store
 
 compute :: Task Monad k v -> Store i k v -> v
-compute task store = undefined
+compute task store = runIdentity $ run task (\k -> Identity (getValue k store))
 
 dependencies :: Task Applicative k v -> [k]
 dependencies task = getConst $ run task (\k -> Const [k])
+
+track :: Monad m => Task Monad k v -> (k -> m v) -> m (v, [(k,v)])
+track task fetch = runWriterT $ run task trackingFetch
+  where
+    trackingFetch k = do v <- lift (fetch k); tell [(k, v)]; return v
+
+data Trace k v r = Trace { key :: k, depends :: [(k, Hash v)], result :: r }
+
 
 main = putStrLn "Hello, World!"
