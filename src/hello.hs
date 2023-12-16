@@ -50,7 +50,7 @@ type Rebuilder c   ir k v = k -> v -> Task c k v -> Task (MonadState ir) k v
 
 
 busy :: Eq k => Build Applicative () k v
-busy tasks key store = execState (fetch key) store
+busy tasks key = execState (fetch key)
   where
     fetch k = case tasks k of
                 Nothing -> gets (getValue k)
@@ -58,7 +58,7 @@ busy tasks key store = execState (fetch key) store
 
 
 sprsh1 :: Tasks Applicative String Integer
-sprsh1 "B1" = Just $ Task $ \fetch -> ((+) <$> fetch "A1" <*> fetch "A2")
+sprsh1 "B1" = Just $ Task $ \fetch -> (+) <$> fetch "A1" <*> fetch "A2"
 sprsh1 "B2" = Just $ Task $ \fetch -> (*2) <$> fetch "B1"
 sprsh1 _ = Nothing
 
