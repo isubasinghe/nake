@@ -1,0 +1,60 @@
+enum platform {
+  visionfive2;
+  raspberrypi4;
+};
+
+deriving [fmt] for platform;
+
+
+enum mode {
+  release;
+  debug;
+};
+
+instance fmt for mode {
+  release = "release";
+  debug = "debug";
+};
+
+instance platform {
+  fn gcc(self: platform) {
+    match plat {
+      plat::visionfive2 => "",
+      plat::raspberrypi4 => ""
+    }
+  };
+};
+
+kernel_static = {
+  flags = [platform, mode];
+  src = glob "./src/*.rs";
+  cmd = "cargo build";
+  dependencies = withFlake {
+    # url = "";
+    # file = ;
+  };
+  outputs = [
+    file {
+      name = "libkernel";
+      path = "libmukernel.a";
+    }
+  ];
+};
+
+os_elf = {
+  flags = [platform, mode];
+  src = glob "./src/plat/*.S";
+  inputs = kernel_static.outputs;
+  cmds = "$platform.gcc() -static -ffreestanding -nosstdlib 
+    -fno-exceptions -march=$mode -Tsrc/plat/$platform/board.ld -o os.elf $$src.files -L./target/rust/release -lmukernel"; 
+
+  dependencies = withFlake {
+  };
+
+  outputs = [
+    file {
+      name = "elf";
+      path = "./os.elf";
+    }
+  ];
+};

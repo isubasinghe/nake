@@ -32,9 +32,16 @@ flag threaded
 
 executable hello
   hs-source-dirs: src
+  other-modules:
+    NakeLexer
+    NakeAST
   main-is: hello.hs
+  build-tools:
+    alex >= 3.3 && < 3.5
+    , happy >= 1.18 && < 1.21
   build-depends: 
     base >= 4.2 && < 5
+    , array >= 0.5 && < 0.6
     , parallel >= 3.2 && < 3.3
     , mtl >=2.2.2 && <3
     , text >= 0.2 && < 2.2
