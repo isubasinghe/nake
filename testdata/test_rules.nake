@@ -1,0 +1,19 @@
+rule1 = {
+  flags = [platform];
+  src = glob "./src/*.rs";
+  dependencies = withFlake {
+    # url = "";
+    # file = ;
+  };
+  outputs = [
+    file {
+      name = "libkernel";
+      path = "libmukernel.a";
+    }
+  ];
+};
+
+rule2 = {
+  cmd = "echo hello";
+  inputs = rule1.outputs;
+}; 

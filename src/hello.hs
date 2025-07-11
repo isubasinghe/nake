@@ -5,78 +5,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BlockArguments #-}
 
-module Main (main) where
-import Control.Monad.RWS (MonadState)
-import Control.Monad.State 
-import Control.Monad.Writer
-import Data.Hashable (Hashable)
-import Data.Functor.Const
-import Data.Functor.Identity
-import qualified Data.Map.Strict as M
+import NakeParser
+import NakeAST
+import NakeLexer
 
-data Store i k v = Stored i (k -> v) 
-
-initialise :: i -> (k -> v) -> Store i k v
-initialise = Stored
-
-getInfo :: Store i k v -> i
-getInfo (Stored i fn) = i
-
-putInfo :: i -> Store i k v -> Store i k v
-putInfo i (Stored old fn) = Stored i fn
-
-getValue :: k -> Store i k v -> v
-getValue k (Stored i fn) = fn k
-
-putValue :: Eq k => k -> v -> Store i k v -> Store i k v
-putValue k v (Stored i fn) = Stored i (\nk -> if nk == k then v else fn nk)
-
-
-data Hash v
-
-hash :: Hashable v => v -> Hash v
-hash = undefined
-
-getHash :: Hashable v => k -> Store i k v -> Hash v
-getHash = undefined
-
-newtype Task c k v = Task { run :: forall f. c f => (k -> f v) -> f v }
-type Tasks c k v = k -> Maybe (Task c k v)
-
-type Build c i k v = Tasks c k v -> k -> Store i k v -> Store i k v
-
-type Scheduler c i ir k v = Rebuilder c ir k v -> Build c i k v
-type Rebuilder c   ir k v = k -> v -> Task c k v -> Task (MonadState ir) k v
-
-
-busy :: Eq k => Build Applicative () k v
-busy tasks key = execState (fetch key)
-  where
-    fetch k = case tasks k of
-                Nothing -> gets (getValue k)
-                Just task -> do v <- run task fetch; modify (putValue k v); return v
-
-
-sprsh1 :: Tasks Applicative String Integer
-sprsh1 "B1" = Just $ Task $ \fetch -> (+) <$> fetch "A1" <*> fetch "A2"
-sprsh1 "B2" = Just $ Task $ \fetch -> (*2) <$> fetch "B1"
-sprsh1 _ = Nothing
-
-store = initialise () (\key -> if key == "A1" then 10 else 20)
-result' = busy sprsh1 "B2" store
-
-compute :: Task Monad k v -> Store i k v -> v
-compute task store = runIdentity $ run task (\k -> Identity (getValue k store))
-
-dependencies :: Task Applicative k v -> [k]
-dependencies task = getConst $ run task (\k -> Const [k])
-
-track :: Monad m => Task Monad k v -> (k -> m v) -> m (v, [(k,v)])
-track task fetch = runWriterT $ run task trackingFetch
-  where
-    trackingFetch k = do v <- lift (fetch k); tell [(k, v)]; return v
-
-data Trace k v r = Trace { key :: k, depends :: [(k, Hash v)], result :: r }
-
-
-main = putStrLn "Hello, World!"
+main :: IO ()
+main = do
+  content <- readFile "testdata/simple.nake"
+  case runLexer content of
+    Left err -> putStrLn $ "Lexer error: " ++ err
+    Right tokens -> do
+      case parseProgram tokens of
+        Left err -> putStrLn $ "Parse error: " ++ err
+        Right program -> do
+          putStrLn "Parse successful!"
+          print program

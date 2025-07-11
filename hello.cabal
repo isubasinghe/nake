@@ -35,10 +35,11 @@ executable hello
   other-modules:
     NakeLexer
     NakeAST
+    NakeParser
   main-is: hello.hs
   build-tools:
-    alex >= 3.3 && < 3.5
-    , happy >= 1.18 && < 1.21
+    alex 
+    , happy
   build-depends: 
     base >= 4.2 && < 5
     , array >= 0.5 && < 0.6

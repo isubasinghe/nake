@@ -1,0 +1,4 @@
+enum platform {
+  visionfive2;
+  raspberrypi4;
+}; 

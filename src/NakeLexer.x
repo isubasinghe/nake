@@ -12,7 +12,7 @@ $digit   = 0-9
 $alpha   = [a-zA-Z] 
 $alnum   = [ $alpha $digit ]
 @ident   = $alpha [ $alnum \_ ]*
-@string  = \" ([^ \" \t \n \\ ] | \\ . )* \"
+@string  = \" ([^ \" \\ ] | \\ . | \n | \t | \r)* \"
 @comment = \# .*
 @number  = $digit+
 
@@ -36,16 +36,22 @@ rules :-
   enum         { mkTok T_Enum }
   deriving     { mkTok T_Deriving }
   fmt          { mkTok T_Fmt }
+  for          { mkTok T_For }
+  glob         { mkTok T_Glob }
+  withFlake    { mkTok T_WithFlake }
   \{           { mkTok T_LBrace }
   \}           { mkTok T_RBrace }
   \[           { mkTok T_LBracket }
   \]           { mkTok T_RBracket }
   \(           { mkTok T_LParen }
   \)           { mkTok T_RParen }
+  \:\:         { mkTok T_DoubleColon }
   \:           { mkTok T_Colon }
   \,           { mkTok T_Comma }
   \;           { mkTok T_Semi }
   \=           { mkTok T_Eq }
+  \=\>         { mkTok T_Arrow }
+  \.           { mkTok T_Dot }
   \$\$         { mkTok T_MetaMetaFunc }
   \$           { mkTok T_MetaVar }
   @comment     ;
@@ -75,16 +81,22 @@ data Token
     | T_Enum AlexPosn
     | T_Deriving AlexPosn
     | T_Fmt AlexPosn
+    | T_For AlexPosn
+    | T_Glob AlexPosn
+    | T_WithFlake AlexPosn
     | T_LBrace AlexPosn
     | T_RBrace AlexPosn
     | T_LBracket AlexPosn
     | T_RBracket AlexPosn
     | T_LParen AlexPosn
     | T_RParen AlexPosn
+    | T_DoubleColon AlexPosn
     | T_Colon AlexPosn
     | T_Comma AlexPosn
     | T_Semi AlexPosn
     | T_Eq AlexPosn
+    | T_Arrow AlexPosn
+    | T_Dot AlexPosn
     | T_MetaMetaFunc AlexPosn
     | T_MetaVar AlexPosn
     | T_String AlexPosn String
