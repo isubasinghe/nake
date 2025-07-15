@@ -2,7 +2,7 @@
 -- documentation, which can be found here:
 --   http://haskell.org/cabal/release/cabal-latest/doc/users-guide/
 
-name: hello
+name: nake
 version: 1.0.0.2
 license: BSD3
 license-file: LICENSE
@@ -30,13 +30,14 @@ source-repository head
 flag threaded
   default: False
 
-executable hello
+executable nake
   hs-source-dirs: src
   other-modules:
     NakeLexer
     NakeAST
     NakeParser
-  main-is: hello.hs
+    Scheduler
+  main-is: Nake.hs
   build-tools:
     alex 
     , happy

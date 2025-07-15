@@ -28,7 +28,7 @@
       in flake // {
         legacyPackages = pkgs;
 
-        packages.default = flake.packages."hello:exe:hello";
+        packages.default = flake.packages."nake:exe:nake";
       });
 
   # --- Flake Local Nix Configuration ----------------------------
